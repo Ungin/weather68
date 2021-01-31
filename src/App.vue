@@ -15,8 +15,5 @@ export default {
     Navbar,
   },
 
-  data: () => ({
-    //
-  }),
 };
 </script>

@@ -15,7 +15,7 @@
               </p>
             </v-list-item-title>
             <v-list-item-subtitle>
-              {{weather.WeatherText}}
+              {{ description }}
             </v-list-item-subtitle>
           </v-list-item-content>
         </v-list-item>
@@ -45,7 +45,9 @@ export default {
   data() {
     return {
       apiKey: process.env.VUE_APP_ACCU_WEATHER_API_KEY,
-      weather: undefined,
+      temperature: undefined,
+      icon: undefined,
+      description: undefined
     };
   },
 
@@ -57,23 +59,10 @@ export default {
 
   computed: {
     ...mapState({
-      celsius: (state) => state.favorites.temperatureMode.celsius,
-      fahrenheit: (state) => state.favorites.temperatureMode.fahrenheit,
+      celsius: state => state.favorites.temperatureMode.celsius,
+      fahrenheit: state => state.favorites.temperatureMode.fahrenheit,
     }),
 
-    temperature() {
-      return this.celsius
-        ? this.weather.Temperature.Metric.Value
-        : this.weather.Temperature.Imperial.Value;
-    },
-
-    icon() {
-      let num =
-        this.weather.WeatherIcon.Icon >= 10
-          ? this.weather.WeatherIcon
-          : this.weather.WeatherIcon.toString().padStart(2, "0");
-      return `https://developer.accuweather.com/sites/default/files/${num}-s.png`;
-    },
   },
 
   methods: {
@@ -84,12 +73,18 @@ export default {
       console.log(this.city.Key);
       try {
         const { data } = await axios.get(`http://dataservice.accuweather.com/currentconditions/v1/${this.city.Key}?apikey=${this.apiKey}&details=true`)
+        
         if(!data) {
           throw new Error()
         }
-        this.weather = data[0]
+
+        this.temperature = this.celsius ? data[0].Temperature.Metric.Value: data[0].Temperature.Imperial.Value;
+        this.description = data[0].WeatherText;
+        let num = data[0].WeatherIcon.Icon >= 10 ? data[0].WeatherIcon : data[0].WeatherIcon.toString().padStart(2, "0");
+        this.icon = `https://developer.accuweather.com/sites/default/files/${num}-s.png`;
+    
       } catch (e) {
-        this.$toast.error(e, { icon: 'error' })
+          this.$toasted.error(e, { icon: 'error' })
       }
     },
 
@@ -100,6 +95,9 @@ export default {
 
     removeFavorite() {
       this.$emit("removeFavorite", this.city);
+      if(this.cities.length < 1) {
+        this.$router.push("/");
+      }
     },
   },
 

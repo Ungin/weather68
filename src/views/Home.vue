@@ -15,7 +15,6 @@
               >Add to favorites</v-btn
             >
           </v-row>
-          <!--  mdiPlusThick -->
         </v-col>
       </v-row>
       <v-row justify="center">
@@ -38,8 +37,6 @@ import { mapState, mapActions } from "vuex";
 import DayCard from "@/components/DayCard";
 import Search from "@/components/Home/Search.vue";
 
-// import staticForecastForTLV from "@/static/staticForecastForTLV.json";
-// import staticForecastforMadrid from "@/static/staticForecastforMadrid.json";
 
 export default {
   name: "Home",
@@ -55,16 +52,14 @@ export default {
       defaultCity: undefined,
       default: undefined,
       currLocation: undefined,
+      dailyForecasts: undefined,
+      dailyDescription: undefined
     };
   },
 
   created() {
-    this.defaultCity = this.getCurrentGeolocation()//this.basicDefault;
+    this.defaultCity = this.getCurrentGeolocation();
   },
-
-  // mounted() {
-  //   this.getCurrentGeolocation();
-  // },
 
   computed: {
     ...mapState({
@@ -73,20 +68,13 @@ export default {
       fahrenheit: state => state.favorites.temperatureMode.fahrenheit
     }),
 
-    dailyForecasts() {
-      return this.default.DailyForecasts;
-    },
-
-    dailyDescription() {
-      return this.default.Headline.Text;
-    },
   },
 
-  // watch: {
-  //   currLocation() {
-  //     return this.checkLocationKey()
-  //   }
-  // },
+  watch: {
+    currLocation() {
+      return this.checkLocationKey()
+    }
+  },
 
   methods: {
     ...mapActions({
@@ -104,25 +92,22 @@ export default {
         this.currLocation = data.location;
         return this.checkLocationKey()
       } catch (e) {
-        this.$toast.error(e, { icon: 'error' })
+        this.$toasted.error(e, { icon: 'error' })
       }
     },
 
     async getLocationWeather(location) {
-      console.log("searching for : ", location.Key, location);
       try {
         const { data } = await axios.get(`http://dataservice.accuweather.com/forecasts/v1/daily/5day/${location.Key}?apikey=${this.apiKey}&details=true&metric=${this.celsius ? true : false }`)
-        // console.log('data for search: ', data);
         if(!data) {
           throw new Error()
         }
         this.default = data
-        // this.defaultCity = location
-
-        // this.default = staticForecastforMadrid;
         this.defaultCity = location;
+        this.dailyForecasts = data.DailyForecasts
+        this.dailyDescription = data.Headline.Text
       } catch (e) {
-        this.$toast.error(e, { icon: 'error' })
+        this.$toasted.error(e, { icon: 'error' })
       }
     },
 
@@ -130,17 +115,20 @@ export default {
       try {
         let latlngString = this.currLocation.lat + ',' + this.currLocation.lng
         const { data } = await axios.get(`http://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey=${this.apiKey}&q=${latlngString}&details=true`)
-        console.log(data);
+        if(!data) {
+          throw new Error()
+        }
         return this.getLocationWeather(data)
       }
       catch(e) {
-        console.log(e);
+        this.$toasted.error(e, { icon: 'error' })
       }
     },
 
     addLocation() {
       this.addToFavorites(this.defaultCity);
     },
+
   },
  
 };

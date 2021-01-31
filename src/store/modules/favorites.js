@@ -1,20 +1,12 @@
 
 const state = () => ({
-    default: {
-        LocalizedName: 'Tel Aviv',
-        Key: '215854'
-    },
+    
+    default: undefined,
     temperatureMode: {
         celsius: true,
         fahrenheit: false
     },
-    number: 1,
-    favorites: [
-        {
-            LocalizedName: 'Tel Aviv',
-            Key: '215854'
-        },
-    ]
+    favorites: []
 })
 
 const actions = {

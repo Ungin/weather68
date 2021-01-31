@@ -34,7 +34,7 @@ import CityCard from '@/components/CityCard'
   
     },
 
-    mounted() {
+    created() {
       this.cities = this.favoriteCities
     },
 

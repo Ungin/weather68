@@ -63,8 +63,7 @@ export default {
         this.items = data
       }
       catch(e) {
-        this.$toast.error(e, { icon: 'error' })
-      }
+        this.$toasted.error(e, { icon: 'error' }) }
     },
   }
 }
